@@ -16,6 +16,7 @@ package cobra
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -574,5 +575,37 @@ func TestLegacyArgsSubcmdAcceptsArgs(t *testing.T) {
 	_, err := executeCommand(rootCmd, "child", "somearg")
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
+	}
+}
+
+func TestNoEmptyArgs(t *testing.T) {
+	c := getCommand(NoEmptyArgs, false)
+
+	output, err := executeCommand(c, "a", "b")
+	expectSuccess(output, err, t)
+
+	_, err = executeCommand(c, "a", "")
+	if err == nil {
+		t.Fatal("Expected an error")
+	}
+	expected := `argument 2 for "c" must not be empty`
+	if err.Error() != expected {
+		t.Errorf("Expected: %q, got: %q", expected, err.Error())
+	}
+}
+
+func TestMatchRegexp(t *testing.T) {
+	c := getCommand(MatchRegexp(regexp.MustCompile(`^[a-z]+$`)), false)
+
+	output, err := executeCommand(c, "abc", "def")
+	expectSuccess(output, err, t)
+
+	_, err = executeCommand(c, "abc", "D3F")
+	if err == nil {
+		t.Fatal("Expected an error")
+	}
+	expected := `invalid argument "D3F" for "c": must match ^[a-z]+$`
+	if err.Error() != expected {
+		t.Errorf("Expected: %q, got: %q", expected, err.Error())
 	}
 }
