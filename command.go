@@ -257,6 +257,9 @@ type Command struct {
 	// SuggestionsMinimumDistance defines minimum levenshtein distance to display suggestions.
 	// Must be > 0.
 	SuggestionsMinimumDistance int
+
+	// SuggestionsMaximum limits the number of suggestions displayed. 0 means no limit.
+	SuggestionsMaximum int
 }
 
 // Context returns underlying command context. If command was executed
@@ -878,6 +881,9 @@ func (c *Command) SuggestionsFor(typedName string) []string {
 				suggestions = append(suggestions, cmd.Name())
 			}
 		}
+	}
+	if c.SuggestionsMaximum > 0 && len(suggestions) > c.SuggestionsMaximum+1 {
+		suggestions = suggestions[:c.SuggestionsMaximum+1]
 	}
 	return suggestions
 }
