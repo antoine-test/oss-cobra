@@ -963,9 +963,8 @@ func (c *Command) execute(a []string) (err error) {
 
 	if EnableExecTiming {
 		start := time.Now()
-		// fmt.Fprintln(os.Stderr, "timing enabled for", c.CommandPath())
 		defer func() {
-			c.PrintErrln("command", c.CommandPath(), "took", time.Since(start))
+			c.PrintErrf("command %s took %s\n", c.CommandPath(), time.Since(start))
 		}()
 	}
 
