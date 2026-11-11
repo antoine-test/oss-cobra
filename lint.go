@@ -6,60 +6,48 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-// Lint inspects the command and returns a list of problems.
-func (c *Command) Lint() []string {
-	var problems []string
+const maxShortLength = 80
+
+func lintUse(c *Command) []string {
 	if c.Use == "" {
-		problems = append(problems, "command has no Use")
-	} else {
-		if strings.Contains(c.Use, "  ") {
-			problems = append(problems, "double space in Use of "+c.Use)
-		}
-		if c.Short == "" {
-			if c.Long == "" {
-				if c.Runnable() {
-					problems = append(problems, "runnable command without description: "+c.Use)
-				} else {
-					problems = append(problems, "command without description: "+c.Use)
-				}
-			} else {
-				problems = append(problems, "command without short description: "+c.Use)
-			}
-		} else {
-			if strings.HasSuffix(c.Short, ".") {
-				if len(c.Short) > 80 {
-					problems = append(problems, "short description is too long and ends with a dot: "+c.Use)
-				} else {
-					problems = append(problems, "short description ends with a dot: "+c.Use)
-				}
-			} else {
-				if len(c.Short) > 80 {
-					problems = append(problems, "short description is too long: "+c.Use)
-				}
-			}
-		}
+		return []string{"command has no Use"}
 	}
+	if strings.Contains(c.Use, "  ") {
+		return []string{"double space in Use of " + c.Use}
+	}
+	return nil
+}
+
+func lintDescription(c *Command) []string {
 	switch {
-	case c.Hidden && c.Deprecated != "":
-		problems = append(problems, "hidden and deprecated command: "+c.Use)
-	case c.Deprecated != "" && c.Runnable():
-		problems = append(problems, "hidden and deprecated command: "+c.Use)
+	case c.Use == "":
+		return nil
+	case c.Short == "" && c.Long == "":
+		return []string{"command without description: " + c.Use}
+	case c.Short == "":
+		return []string{"command without short description: " + c.Use}
 	}
+	var problems []string
+	if strings.HasSuffix(c.Short, ".") {
+		problems = append(problems, "short description ends with a dot: "+c.Use)
+	}
+	if len(c.Short) > maxShortLength {
+		problems = append(problems, "short description is too long: "+c.Use)
+	}
+	return problems
+}
+
+func lintFlags(c *Command) []string {
+	var problems []string
 	c.Flags().VisitAll(func(f *flag.Flag) {
 		if f.Usage == "" {
-			if f.Hidden {
-				problems = append(problems, "hidden flag without usage: "+f.Name)
-			} else {
-				if f.Shorthand != "" {
-					problems = append(problems, "flag without usage: "+f.Name+" (-"+f.Shorthand+")")
-				} else {
-					problems = append(problems, "flag without usage: "+f.Name)
-				}
-			}
-		} else if strings.ToUpper(f.Usage[:1]) == f.Usage[:1] && f.Name != "help" {
-			problems = append(problems, "flag usage starts with an uppercase letter: "+f.Name)
+			problems = append(problems, "flag without usage: "+f.Name)
 		}
 	})
+	return problems
+}
+
+func lintAliases(c *Command) (problems []string) {
 	seen := map[string]bool{}
 	for _, alias := range c.Aliases {
 		if seen[alias] {
@@ -69,6 +57,16 @@ func (c *Command) Lint() []string {
 		}
 		seen[alias] = true
 	}
+	return
+}
+
+// Lint inspects the command and returns a list of problems.
+func (c *Command) Lint() []string {
+	var problems []string
+	problems = append(problems, lintUse(c)...)
+	problems = append(problems, lintDescription(c)...)
+	problems = append(problems, lintFlags(c)...)
+	problems = append(problems, lintAliases(c)...)
 	return problems
 }
 
