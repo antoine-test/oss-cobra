@@ -28,6 +28,7 @@ type jsonCommand struct {
 }
 
 func buildJSON(cmd *cobra.Command) jsonCommand {
+	cmd.SetOutput(io.Discard)
 	cmd.InitDefaultHelpCmd()
 	cmd.InitDefaultHelpFlag()
 
@@ -59,6 +60,7 @@ func GenJSON(cmd *cobra.Command, w io.Writer) error {
 
 // GenJSONTree writes one JSON file per command into dir.
 func GenJSONTree(cmd *cobra.Command, dir string) error {
+	os.MkdirAll(dir, 0777)
 	for _, c := range cmd.Commands() {
 		if !c.IsAvailableCommand() || c.IsAdditionalHelpTopicCommand() {
 			continue
