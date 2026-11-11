@@ -2952,3 +2952,31 @@ func TestHelpFuncExecuted(t *testing.T) {
 
 	checkStringContains(t, output, helpText)
 }
+
+func TestNameAndAliases(t *testing.T) {
+	c := &Command{Use: "serve [flags]", Aliases: []string{"run", "start"}}
+
+	if got := c.NameAndAliases(); got != "serve, run, start" {
+		t.Errorf("Expected %q, got %q", "serve, run, start", got)
+	}
+}
+
+func TestHasAliasTable(t *testing.T) {
+	c := &Command{Use: "serve", Aliases: []string{"run", "start"}}
+	tests := []struct {
+		alias    string
+		expected bool
+	}{
+		{"run", true},
+		{"start", true},
+		{"serve", false},
+		{"", false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.alias, func(t *testing.T) {
+			if got := c.HasAlias(tt.alias); got != tt.expected {
+				t.Errorf("HasAlias(%q): expected %v, got %v", tt.alias, tt.expected, got)
+			}
+		})
+	}
+}
