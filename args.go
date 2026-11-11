@@ -16,6 +16,7 @@ package cobra
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -141,4 +142,26 @@ func MatchAll(pargs ...PositionalArgs) PositionalArgs {
 // Deprecated: use MatchAll(ExactArgs(n), OnlyValidArgs) instead
 func ExactValidArgs(n int) PositionalArgs {
 	return MatchAll(ExactArgs(n), OnlyValidArgs)
+}
+
+// NoEmptyArgs returns an error if any positional arg is an empty string.
+func NoEmptyArgs(cmd *Command, args []string) error {
+	for i, arg := range args {
+		if arg == "" {
+			return fmt.Errorf("argument %d for %q must not be empty", i+1, cmd.CommandPath())
+		}
+	}
+	return nil
+}
+
+// MatchRegexp returns an error if any positional arg does not match the regular expression re.
+func MatchRegexp(re *regexp.Regexp) PositionalArgs {
+	return func(cmd *Command, args []string) error {
+		for _, arg := range args {
+			if !re.MatchString(arg) {
+				return fmt.Errorf("invalid argument %q for %q: must match %s", arg, cmd.CommandPath(), re.String())
+			}
+		}
+		return nil
+	}
 }
