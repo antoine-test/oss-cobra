@@ -1,6 +1,10 @@
 package cobra
 
-import "strings"
+import (
+	"strings"
+
+	flag "github.com/spf13/pflag"
+)
 
 // Lint inspects the command and returns a list of problems.
 func (c *Command) Lint() []string {
@@ -40,6 +44,39 @@ func (c *Command) Lint() []string {
 		problems = append(problems, "hidden and deprecated command: "+c.Use)
 	case c.Deprecated != "" && c.Runnable():
 		problems = append(problems, "hidden and deprecated command: "+c.Use)
+	}
+	c.Flags().VisitAll(func(f *flag.Flag) {
+		if f.Usage == "" {
+			if f.Hidden {
+				problems = append(problems, "hidden flag without usage: "+f.Name)
+			} else {
+				if f.Shorthand != "" {
+					problems = append(problems, "flag without usage: "+f.Name+" (-"+f.Shorthand+")")
+				} else {
+					problems = append(problems, "flag without usage: "+f.Name)
+				}
+			}
+		} else if strings.ToUpper(f.Usage[:1]) == f.Usage[:1] && f.Name != "help" {
+			problems = append(problems, "flag usage starts with an uppercase letter: "+f.Name)
+		}
+	})
+	seen := map[string]bool{}
+	for _, alias := range c.Aliases {
+		if seen[alias] {
+			problems = append(problems, "duplicate alias: "+alias)
+		} else if alias == c.Name() {
+			problems = append(problems, "alias equals the command name: "+alias)
+		}
+		seen[alias] = true
+	}
+	return problems
+}
+
+// LintTree returns the problems of the command and of all its subcommands.
+func (c *Command) LintTree() []string {
+	problems := c.Lint()
+	for _, sub := range c.Commands() {
+		problems = append(problems, sub.LintTree()...)
 	}
 	return problems
 }
