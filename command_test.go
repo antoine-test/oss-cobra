@@ -2952,3 +2952,15 @@ func TestHelpFuncExecuted(t *testing.T) {
 
 	checkStringContains(t, output, helpText)
 }
+
+func TestExecTiming(t *testing.T) {
+	EnableExecTiming = true
+	defer func() { EnableExecTiming = false }()
+
+	rootCmd := &Command{Use: "root", Run: emptyRun}
+	output, err := executeCommand(rootCmd)
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+	checkStringContains(t, output, "command root took")
+}
