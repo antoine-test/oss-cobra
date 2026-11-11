@@ -65,6 +65,9 @@ var EnableCaseInsensitive = defaultCaseInsensitive
 // By default this is disabled, which means only the first run hook to be found is executed.
 var EnableTraverseRunHooks = defaultTraverseRunHooks
 
+// CompletionCacheTTL is the duration used by CachedCompletions to keep completion results.
+var CompletionCacheTTL = 30 * time.Second
+
 // MousetrapHelpText enables an information splash screen on Windows
 // if the CLI is started from explorer.exe.
 // To disable the mousetrap, just set this variable to blank string ("").
