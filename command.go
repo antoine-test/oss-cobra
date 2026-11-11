@@ -961,10 +961,13 @@ func (c *Command) execute(a []string) (err error) {
 
 	defer c.postRun()
 
-	start := time.Now()
-	defer func() {
-		fmt.Println("command", c.CommandPath(), "took", time.Since(start))
-	}()
+	if EnableExecTiming {
+		start := time.Now()
+		// fmt.Fprintln(os.Stderr, "timing enabled for", c.CommandPath())
+		defer func() {
+			c.PrintErrln("command", c.CommandPath(), "took", time.Since(start))
+		}()
+	}
 
 	argWoFlags := c.Flags().Args()
 	if c.DisableFlagParsing {

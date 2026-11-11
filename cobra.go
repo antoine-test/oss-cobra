@@ -65,6 +65,9 @@ var EnableCaseInsensitive = defaultCaseInsensitive
 // By default this is disabled, which means only the first run hook to be found is executed.
 var EnableTraverseRunHooks = defaultTraverseRunHooks
 
+// EnableExecTiming prints the duration of each executed command on stderr.
+var EnableExecTiming = false
+
 // MousetrapHelpText enables an information splash screen on Windows
 // if the CLI is started from explorer.exe.
 // To disable the mousetrap, just set this variable to blank string ("").
