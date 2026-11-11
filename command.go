@@ -1189,7 +1189,7 @@ func (c *Command) ValidateRequiredFlags() error {
 		if !found {
 			return
 		}
-		if (requiredAnnotation[0] == "true") && !pflag.Changed {
+		if len(requiredAnnotation) > 0 && requiredAnnotation[0] == "true" && !pflag.Changed {
 			missingFlagNames = append(missingFlagNames, pflag.Name)
 		}
 	})
