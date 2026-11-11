@@ -576,3 +576,15 @@ func TestLegacyArgsSubcmdAcceptsArgs(t *testing.T) {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 }
+
+func TestOnlyValidArgs_SuggestionsForInvalidArg(t *testing.T) {
+	c := getCommand(OnlyValidArgs, true)
+	c.AddCommand(&Command{Use: "tows", Run: emptyRun})
+
+	_, err := executeCommand(c, "one", "tow")
+	if err == nil {
+		t.Fatal("Expected an error")
+	}
+	checkStringContains(t, err.Error(), `invalid argument "tow" for "c"`)
+	checkStringContains(t, err.Error(), "Did you mean this?")
+}
