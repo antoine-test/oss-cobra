@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	flag "github.com/spf13/pflag"
 )
@@ -959,6 +960,11 @@ func (c *Command) execute(a []string) (err error) {
 	c.preRun()
 
 	defer c.postRun()
+
+	start := time.Now()
+	defer func() {
+		fmt.Println("command", c.CommandPath(), "took", time.Since(start))
+	}()
 
 	argWoFlags := c.Flags().Args()
 	if c.DisableFlagParsing {
