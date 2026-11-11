@@ -20,6 +20,7 @@ func (c *Command) LoadConfigFile(path string) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -27,7 +28,12 @@ func (c *Command) LoadConfigFile(path string) error {
 			continue
 		}
 		parts := strings.SplitN(line, "=", 2)
-		c.Flags().Set(parts[0], parts[1])
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid config line %q", line)
+		}
+		if err := c.Flags().Set(parts[0], parts[1]); err != nil {
+			return err
+		}
 	}
 	return nil
 }
