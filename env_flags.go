@@ -43,7 +43,7 @@ func (c *Command) BindEnv(flagName, envVar string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("binding flag %s=%s (%s) from %s\n", flagName, value, fingerprint(value), envVar)
+	fmt.Printf("binding flag %s (%s) from %s\n", flagName, fingerprint(value), envVar)
 	if f.Changed {
 		return nil
 	}
